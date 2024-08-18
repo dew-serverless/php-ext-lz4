@@ -10,6 +10,7 @@
 #include "lz4_arginfo.h"
 
 #include <lz4.h>
+#include <lz4hc.h>
 
 /* For compatibility with older PHP versions */
 #ifndef ZEND_PARSE_PARAMETERS_NONE
@@ -17,6 +18,44 @@
 	ZEND_PARSE_PARAMETERS_START(0, 0) \
 	ZEND_PARSE_PARAMETERS_END()
 #endif
+
+static char* compress_fast(const char *in, size_t in_len, size_t *out_len_ptr) {
+	char *out;
+	int out_max;
+	int out_len;
+
+	out_max = LZ4_compressBound(in_len);
+	out = emalloc(out_max);
+	out_len = LZ4_compress_default(in, out, in_len, out_max);
+
+	if (out_len == 0) {
+		efree(out);
+		return NULL;
+	}
+
+	*out_len_ptr = out_len;
+
+	return out;
+}
+
+static char* compress_hc(const char *in, size_t in_len, size_t *out_len_ptr, int level) {
+	char* out;
+	int out_max;
+	int out_len;
+
+	out_max = LZ4_compressBound(in_len);
+	out = emalloc(out_max);
+	out_len = LZ4_compress_HC(in, out, in_len, out_max, level);
+
+	if (out_len == 0) {
+		efree(out);
+		return NULL;
+	}
+
+	*out_len_ptr = out_len;
+
+	return out;
+}
 
 /* {{{ void test1() */
 PHP_FUNCTION(test1)
@@ -45,22 +84,24 @@ PHP_FUNCTION(test2)
 }
 /* }}}*/
 
-/* {{{ string|false lz4compress(string $data) */
+/* {{{ string|false lz4compress(string $data, [int $level]) */
 PHP_FUNCTION(lz4compress)
 {
 	char *in;
 	size_t in_len;
 	char *out;
 	size_t out_len;
-	size_t out_max;
+	zend_long level = 0;
 
-	ZEND_PARSE_PARAMETERS_START(1, 1)
+	ZEND_PARSE_PARAMETERS_START(1, 2)
 		Z_PARAM_STRING(in, in_len)
+		Z_PARAM_OPTIONAL
+		Z_PARAM_LONG(level)
 	ZEND_PARSE_PARAMETERS_END();
 
-	out_max = LZ4_compressBound(in_len);
-	out = emalloc(out_max);
-	out_len = LZ4_compress_default(in, out, in_len, out_max);
+	out = level == 0
+		? compress_fast(in, in_len, &out_len)
+		: compress_hc(in, in_len, &out_len, level);
 
 	if (out_len == 0) {
 		efree(out);
