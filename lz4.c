@@ -19,40 +19,50 @@
 	ZEND_PARSE_PARAMETERS_END()
 #endif
 
-static char* compress_fast(const char *in, size_t in_len, size_t *out_len_ptr) {
+typedef int (*compress_func_t)(const char*, char*, int, int, int);
+
+static char* compress(const char *in, size_t in_len, int *out_len,
+					  compress_func_t compress_func,
+					  int level) {
 	char *out;
 	int out_max;
-	int out_len;
 
 	out_max = LZ4_compressBound(in_len);
-	out = emalloc(out_max);
-	out_len = LZ4_compress_default(in, out, in_len, out_max);
+	if (out_max <= 0) {
+		return NULL;
+	}
 
-	if (out_len == 0) {
+	out = emalloc(out_max);
+	*out_len = compress_func(in, out, (int)in_len, out_max, level);
+
+	if (*out_len == 0) {
 		efree(out);
 		return NULL;
 	}
 
-	*out_len_ptr = out_len;
+	return out;
+}
+
+static char* compress_fast(const char *in, size_t in_len, size_t *out_len_ptr) {
+	int out_len;
+
+	char* out = compress(in, in_len, &out_len, (compress_func_t)LZ4_compress_default, 0);
+
+	if (out != NULL) {
+		*out_len_ptr = (size_t)out_len;
+	}
 
 	return out;
 }
 
 static char* compress_hc(const char *in, size_t in_len, size_t *out_len_ptr, int level) {
-	char* out;
-	int out_max;
 	int out_len;
 
-	out_max = LZ4_compressBound(in_len);
-	out = emalloc(out_max);
-	out_len = LZ4_compress_HC(in, out, in_len, out_max, level);
+	char* out = compress(in, in_len, &out_len, LZ4_compress_HC, level);
 
-	if (out_len == 0) {
-		efree(out);
-		return NULL;
+	if (out != NULL) {
+		*out_len_ptr = out_len;
 	}
-
-	*out_len_ptr = out_len;
 
 	return out;
 }
