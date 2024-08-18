@@ -45,6 +45,34 @@ PHP_FUNCTION(test2)
 }
 /* }}}*/
 
+/* {{{ string|false lz4compress(string $data) */
+PHP_FUNCTION(lz4compress)
+{
+	char *in;
+	size_t in_len;
+	char *out;
+	size_t out_len;
+	size_t out_max;
+
+	ZEND_PARSE_PARAMETERS_START(1, 1)
+		Z_PARAM_STRING(in, in_len)
+	ZEND_PARSE_PARAMETERS_END();
+
+	out_max = LZ4_compressBound(in_len);
+	out = emalloc(out_max);
+	out_len = LZ4_compress_default(in, out, in_len, out_max);
+
+	if (out_len == 0) {
+		efree(out);
+		php_error_docref(NULL, E_WARNING, "lz4 compression failed");
+		RETURN_FALSE;
+	}
+
+	RETVAL_STRINGL(out, out_len);
+	efree(out);
+}
+/* }}}*/
+
 /* {{{ PHP_RINIT_FUNCTION */
 PHP_RINIT_FUNCTION(lz4)
 {
