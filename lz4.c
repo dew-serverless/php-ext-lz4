@@ -9,6 +9,8 @@
 #include "php_lz4.h"
 #include "lz4_arginfo.h"
 
+#include <lz4.h>
+
 /* For compatibility with older PHP versions */
 #ifndef ZEND_PARSE_PARAMETERS_NONE
 #define ZEND_PARSE_PARAMETERS_NONE() \
@@ -59,6 +61,7 @@ PHP_MINFO_FUNCTION(lz4)
 {
 	php_info_print_table_start();
 	php_info_print_table_row(2, "lz4 support", "enabled");
+	php_info_print_table_row(2, "lz4 version", LZ4_versionString());
 	php_info_print_table_end();
 }
 /* }}} */
