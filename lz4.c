@@ -69,6 +69,85 @@ static char* compress_hc(const char *in, size_t in_len, size_t *out_len_ptr, int
 	return out;
 }
 
+static int lz4_uncompress(char *in, size_t in_len, char **out, size_t *out_len, size_t max_len) {
+	if (max_len <= 0) {
+		php_error_docref(NULL, E_WARNING, "the max length is invalid");
+		return -1;
+	}
+
+	*out = emalloc(max_len);
+	if (*out == NULL) {
+		php_error_docref(NULL, E_WARNING, "could not allocate memory");
+		return -1;
+	}
+
+	int dst_len = LZ4_decompress_safe(in, *out, (int)in_len, (int)max_len);
+	if (dst_len < 0) {
+		efree(*out);
+		php_error_docref(NULL, E_WARNING, "could not uncompress the data");
+		return -1;
+	}
+
+	*out_len = dst_len;
+	return 0;
+}
+
+static int lz4_uncompress_continue(char *in, size_t in_len, char **out, size_t *out_len) {
+	LZ4_streamDecode_t* ctx = LZ4_createStreamDecode();
+	if (ctx == NULL) {
+		php_error_docref(NULL, E_WARNING, "could not initialize stream decode context");
+		return -1;
+	}
+
+	size_t buf_size = CHUNK_SIZE;
+	*out = emalloc(buf_size);
+	if (*out == NULL) {
+		php_error_docref(NULL, E_WARNING, "could not allocate memory");
+		LZ4_freeStreamDecode(ctx);
+		return -1;
+	}
+
+	size_t remaining = in_len;
+	*out_len = 0;
+
+	while (remaining > 0) {
+		size_t src_size = (remaining < CHUNK_SIZE) ? remaining : CHUNK_SIZE;
+		size_t dst_max = buf_size - *out_len;
+
+		int dst_len = LZ4_decompress_safe_continue(
+			ctx, in, *out + *out_len,
+			(int)src_size, (int)dst_max
+		);
+
+		if (dst_len < 0) {
+			LZ4_freeStreamDecode(ctx);
+			efree(*out);
+			php_error_docref(NULL, E_WARNING, "could not uncompress the data");
+			return -1;
+		}
+
+		*out_len += dst_len;
+		in += src_size;
+		remaining -= src_size;
+
+		// Resize buffer if needed
+		if (remaining > 0 && *out_len >= buf_size) {
+			buf_size *= 2;
+			char *nout = erealloc(*out, buf_size);
+			if (nout == NULL) {
+				php_error_docref(NULL, E_WARNING, "could not allocate memory");
+				LZ4_freeStreamDecode(ctx);
+				efree(*out);
+				return -1;
+			}
+			*out = nout;
+		}
+	}
+
+	LZ4_freeStreamDecode(ctx);
+	return 0;
+}
+
 /* {{{ void test1() */
 PHP_FUNCTION(test1)
 {
@@ -126,65 +205,36 @@ PHP_FUNCTION(lz4compress)
 }
 /* }}}*/
 
-/* {{{ string|false lz4uncompress(string $data) */
+/* {{{ string|false lz4uncompress(string $data, [int $maxLength]) */
 PHP_FUNCTION(lz4uncompress)
 {
-	char *in, *out;
-	size_t in_len, out_len = 0, buf_size = CHUNK_SIZE;
+	char *in, *out = NULL;
+	size_t in_len, out_len = 0;
+	zend_long max_len = 0;
 
-	ZEND_PARSE_PARAMETERS_START(1, 1)
+	ZEND_PARSE_PARAMETERS_START(1, 2)
 		Z_PARAM_STRING(in, in_len)
+		Z_PARAM_OPTIONAL
+		Z_PARAM_LONG(max_len)
 	ZEND_PARSE_PARAMETERS_END();
 
-	LZ4_streamDecode_t* ctx = LZ4_createStreamDecode();
-	if (ctx == NULL) {
-		php_error_docref(NULL, E_WARNING, "could not initialize stream decode context");
+	if (in_len == 0) {
+		RETURN_EMPTY_STRING();
+	}
+
+	if (max_len < 0) {
+		php_error_docref(NULL, E_WARNING, "max_length must be non-negative");
 		RETURN_FALSE;
 	}
 
-	out = emalloc(buf_size);
-	if (out == NULL) {
-		php_error_docref(NULL, E_WARNING, "could not allocate memory");
-		LZ4_freeStreamDecode(ctx);
+	int status = max_len > 0
+		? lz4_uncompress(in, in_len, &out, &out_len, max_len)
+		: lz4_uncompress_continue(in, in_len, &out, &out_len);
+
+	if (status < 0) {
 		RETURN_FALSE;
 	}
 
-	size_t remaining = in_len;
-	while (remaining > 0) {
-		size_t src_size = (remaining < CHUNK_SIZE) ? remaining : CHUNK_SIZE;
-		size_t dst_max = buf_size - out_len;
-
-		int dst_len = LZ4_decompress_safe_continue(
-			ctx, in, out + out_len,
-			(int)src_size, (int)dst_max
-		);
-
-		if (dst_len < 0) {
-			LZ4_freeStreamDecode(ctx);
-			efree(out);
-			php_error_docref(NULL, E_WARNING, "could not uncompress the data");
-			RETURN_FALSE;
-		}
-
-		out_len += dst_len;
-		in += src_size;
-		remaining -= src_size;
-
-		// Resize buffer if needed
-		if (remaining > 0 && out_len >= buf_size) {
-			buf_size *= 2;
-			char *nout = erealloc(out, buf_size);
-			if (nout == NULL) {
-				php_error_docref(NULL, E_WARNING, "could not allocate memory");
-				LZ4_freeStreamDecode(ctx);
-				efree(out);
-				RETURN_FALSE;
-			}
-			out = nout;
-		}
-	}
-
-	LZ4_freeStreamDecode(ctx);
 	RETVAL_STRINGL(out, out_len);
 	efree(out);
 }
