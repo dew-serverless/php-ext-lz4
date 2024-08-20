@@ -87,62 +87,6 @@ static int lz4_uncompress(const char *in, const size_t in_len, char **out, size_
 	return SUCCESS;
 }
 
-static int lz4_uncompress_continue(char *in, size_t in_len, char **out, size_t *out_len) {
-	LZ4_streamDecode_t* ctx = LZ4_createStreamDecode();
-	if (ctx == NULL) {
-		php_error_docref(NULL, E_WARNING, "could not initialize stream decode context");
-		return -1;
-	}
-
-	size_t buf_size = CHUNK_SIZE;
-	*out = emalloc(buf_size);
-	if (*out == NULL) {
-		php_error_docref(NULL, E_WARNING, "could not allocate memory");
-		LZ4_freeStreamDecode(ctx);
-		return -1;
-	}
-
-	size_t remaining = in_len;
-	*out_len = 0;
-
-	while (remaining > 0) {
-		size_t src_size = (remaining < CHUNK_SIZE) ? remaining : CHUNK_SIZE;
-		size_t dst_max = buf_size - *out_len;
-
-		int dst_len = LZ4_decompress_safe_continue(
-			ctx, in, *out + *out_len,
-			(int)src_size, (int)dst_max
-		);
-
-		if (dst_len < 0) {
-			LZ4_freeStreamDecode(ctx);
-			efree(*out);
-			php_error_docref(NULL, E_WARNING, "could not uncompress the data");
-			return -1;
-		}
-
-		*out_len += dst_len;
-		in += src_size;
-		remaining -= src_size;
-
-		// Resize buffer if needed
-		if (remaining > 0 && *out_len >= buf_size) {
-			buf_size *= 2;
-			char *nout = erealloc(*out, buf_size);
-			if (nout == NULL) {
-				php_error_docref(NULL, E_WARNING, "could not allocate memory");
-				LZ4_freeStreamDecode(ctx);
-				efree(*out);
-				return -1;
-			}
-			*out = nout;
-		}
-	}
-
-	LZ4_freeStreamDecode(ctx);
-	return 0;
-}
-
 /* {{{ void test1() */
 PHP_FUNCTION(test1)
 {
