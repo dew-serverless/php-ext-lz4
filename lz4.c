@@ -69,27 +69,22 @@ static char* compress_hc(const char *in, size_t in_len, size_t *out_len_ptr, int
 	return out;
 }
 
-static int lz4_uncompress(char *in, size_t in_len, char **out, size_t *out_len, size_t max_len) {
-	if (max_len <= 0) {
-		php_error_docref(NULL, E_WARNING, "the max length is invalid");
-		return -1;
-	}
-
+static int lz4_uncompress(const char *in, const size_t in_len, char **out, size_t *out_len, const size_t max_len) {
 	*out = emalloc(max_len);
 	if (*out == NULL) {
 		php_error_docref(NULL, E_WARNING, "could not allocate memory");
-		return -1;
+		return FAILURE;
 	}
 
-	int dst_len = LZ4_decompress_safe(in, *out, (int)in_len, (int)max_len);
+	const int dst_len = LZ4_decompress_safe(in, *out, in_len, max_len);
 	if (dst_len < 0) {
 		efree(*out);
 		php_error_docref(NULL, E_WARNING, "could not uncompress the data");
-		return -1;
+		return FAILURE;
 	}
 
 	*out_len = dst_len;
-	return 0;
+	return SUCCESS;
 }
 
 static int lz4_uncompress_continue(char *in, size_t in_len, char **out, size_t *out_len) {
@@ -205,16 +200,15 @@ PHP_FUNCTION(lz4compress)
 }
 /* }}}*/
 
-/* {{{ string|false lz4uncompress(string $data, [int $maxLength]) */
+/* {{{ string|false lz4uncompress(string $data, int $maxLength) */
 PHP_FUNCTION(lz4uncompress)
 {
 	char *in, *out = NULL;
 	size_t in_len, out_len = 0;
 	zend_long max_len = 0;
 
-	ZEND_PARSE_PARAMETERS_START(1, 2)
+	ZEND_PARSE_PARAMETERS_START(2, 2)
 		Z_PARAM_STRING(in, in_len)
-		Z_PARAM_OPTIONAL
 		Z_PARAM_LONG(max_len)
 	ZEND_PARSE_PARAMETERS_END();
 
@@ -227,11 +221,9 @@ PHP_FUNCTION(lz4uncompress)
 		RETURN_FALSE;
 	}
 
-	int status = max_len > 0
-		? lz4_uncompress(in, in_len, &out, &out_len, max_len)
-		: lz4_uncompress_continue(in, in_len, &out, &out_len);
+	const int status = lz4_uncompress(in, in_len, &out, &out_len, max_len);
 
-	if (status < 0) {
+	if (status == FAILURE) {
 		RETURN_FALSE;
 	}
 
