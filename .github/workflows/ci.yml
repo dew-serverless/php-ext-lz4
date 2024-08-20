@@ -17,9 +17,9 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-    - name: configure
+    - name: Configure
       run: ./configure
-    - name: make
+    - name: Make
       run: make
-    - name: make test
+    - name: Make test
       run: make test
