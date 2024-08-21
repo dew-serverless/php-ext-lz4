@@ -7,6 +7,8 @@ lz4
 $data = 'aaaaaaaaaaaaaaaaaaaaaaaaaaa';
 $length = strlen($data);
 var_dump(lz4uncompress(lz4compress($data), $length) === $data);
+var_dump(lz4uncompress(lz4compress($data, 9), $length) === $data);
 ?>
 --EXPECT--
+bool(true)
 bool(true)
