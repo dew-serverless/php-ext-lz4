@@ -7,9 +7,12 @@ on:
 jobs:
   build:
     strategy:
+      fail-fast: false
       matrix:
-        lz4: ['1.9.2']
+        os: [ubuntu-latest, ubuntu-20.04]
+        lz4: ['1.9.2', '1.10.0']
 
+    name: ${{ matrix.os }} - lz4 ${{ matrix.lz4 }}
     runs-on: ubuntu-latest
 
     steps:
