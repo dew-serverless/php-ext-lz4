@@ -93,7 +93,7 @@ static int lz4_uncompress(const char *in, const size_t in_len,
 PHP_FUNCTION(lz4compress)
 {
 	char *in, *out = NULL;
-	size_t in_len, out_len;
+	size_t in_len, out_len = 0;
 	zend_long level = 0;
 
 	ZEND_PARSE_PARAMETERS_START(1, 2)
