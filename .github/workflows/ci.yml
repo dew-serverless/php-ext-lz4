@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, ubuntu-20.04]
+        php: ['8.1', '8.2', '8.3', '8.4']
+        lz4: ['1.9.2', '1.10.0']
+
+    name: ${{ matrix.os }} - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install lz4
+      run: |
+        set -xe
+        BUILD_DIR="/tmp/build/lz4"
+        mkdir -p "$BUILD_DIR"
+        curl -sL https://github.com/lz4/lz4/archive/refs/tags/v${{ matrix.lz4}}.tar.gz | \
+          tar -zx --strip-components=1 -C "$BUILD_DIR"
+        cd "$BUILD_DIR"
+        make
+        sudo make install
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ matrix.php }}
+    - name: Phpize
+      run: phpize
+    - name: Configure
+      run: ./configure
+    - name: Make
+      run: make
+    - name: Make test
+      run: make test
