@@ -6,13 +6,24 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        lz4: ['1.9.2']
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v4
     - name: Install lz4
-      run: sudo apt-get install -y liblz4-dev
+      run: |
+        set -xe; \
+        BUILD_DIR="/tmp/build/lz4" \
+        mkdir -p "$BUILD_DIR"; \
+        curl -sL https://github.com/lz4/lz4/releases/download/v${{ matrix.lz4 }}/lz4-${{ matrix.lz4 }}.tar.gz | \
+          tar -zx --strip-components=1 -C "$BUILD_DIR"; \
+        cd "$BUILD_DIR"; \
+        ./configure; \
+        make && make install
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
       with:
