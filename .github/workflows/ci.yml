@@ -83,7 +83,7 @@ jobs:
         [System.Environment]::SetEnvironmentVariable('Path', "C:\php-sdk;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
         Get-ChildItem -Path "C:\php-sdk\php-sdk-binary-tools-php-sdk-2.3.0"
     - name: Invoke the Starter Script
-      run: phpsdk-vs17-x64.bat
+      run: C:\php-sdk\php-sdk-binary-tools-php-sdk-2.3.0\phpsdk-vs17-x64.bat
     - name: Phpize
       run: phpize
     - name: Configure
