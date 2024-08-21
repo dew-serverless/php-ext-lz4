@@ -76,16 +76,10 @@ jobs:
       with:
         arch: x64
         toolset: ${{ steps.setup-php-sdk.outputs.toolset }}
-    - name: Phpize
-      run: phpize
-    - name: List Files
-      run: Get-ChildItem
-    - name: Configure
-      run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=${{ steps.setup-php-sdk.outputs.prefix }}
-    - name: Make
-      run: nmake
-    - name: Make test
-      run: nmake test
+    - run: phpize
+    - run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=${{ steps.setup-php-sdk.outputs.prefix }}
+    - run: nmake
+    - run: nmake test
     - name: Collects Result
       uses: actions/upload-artifact@v4
       if: always()
