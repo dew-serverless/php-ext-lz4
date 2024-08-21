@@ -69,16 +69,19 @@ jobs:
         Invoke-WebRequest -Uri https://windows.php.net/downloads/releases/php-${{ matrix.php }}-nts-Win32-vs16-x64.zip -OutFile php.zip
         Expand-Archive -Path php.zip -DestinationPath C:\php
         [System.Environment]::SetEnvironmentVariable('Path', "C:\php\php-${{ matrix.php }}-nts-Win32-vs16-x64;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
+        Get-ChildItem -Path "C:\php\php-${{ matrix.php }}-nts-Win32-vs16-x64"
     - name: Setup PHP Development Package
       run: |
         Invoke-WebRequest -Uri https://windows.php.net/downloads/releases/php-devel-pack-${{ matrix.php }}-nts-Win32-vs16-x64.zip -OutFile php-devel-pack.zip
         Expand-Archive -Path php-devel-pack.zip -DestinationPath C:\php-devel-pack
         [System.Environment]::SetEnvironmentVariable('Path', "C:\php-devel-pack\php-${{ matrix.php }}-devel-vs16-x64;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
+        Get-ChildItem -Path "C:\php-devel-pack\php-${{ matrix.php }}-devel-vs16-x64"
     - name: Setup PHP SDK
       run: |
         Invoke-WebRequest -Uri https://github.com/php/php-sdk-binary-tools/archive/refs/tags/php-sdk-2.3.0.zip -OutFile php-sdk.zip
         Expand-Archive -Path php-sdk.zip -DestinationPath C:\php-sdk
         [System.Environment]::SetEnvironmentVariable('Path', "C:\php-sdk\php-sdk-binary-tools-php-sdk-2.3.0;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
+        Get-ChildItem -Path "C:\php-sdk\php-sdk-binary-tools-php-sdk-2.3.0"
     - name: Invoke the Starter Script
       run: phpsdk-vs17-x64.bat
     - name: Phpize
