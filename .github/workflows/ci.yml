@@ -19,7 +19,7 @@ jobs:
         set -xe
         BUILD_DIR="/tmp/build/lz4"
         mkdir -p "$BUILD_DIR"
-        curl -sL https://github.com/lz4/lz4/releases/download/v${{ matrix.lz4 }}/lz4-${{ matrix.lz4 }}.tar.gz | \
+        curl -sL https://github.com/lz4/lz4/archive/refs/tags/v${{ matrix.lz4}}.tar.gz | \
           tar -zx --strip-components=1 -C "$BUILD_DIR"
         cd "$BUILD_DIR"
         ./configure
