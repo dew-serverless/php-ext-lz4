@@ -45,7 +45,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        php: ['8.3']
+        php: ['8.3.10']
         lz4: ['1.10.0']
 
     name: windows latest - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
@@ -65,9 +65,22 @@ jobs:
         Invoke-WebRequest -Uri "https://github.com/lz4/lz4/releases/download/v$Lz4Version/lz4_win64_v$Lz4VersionUnderscored.zip" -OutFile $Lz4Zip
         Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory -Force
     - name: Setup PHP
-      uses: shivammathur/setup-php@v2
-      with:
-        php-version: ${{ matrix.php }}
+      run: |
+        Invoke-WebRequest -Uri https://windows.php.net/downloads/releases/php-${{ matrix.php }}-nts-Win32-vs16-x64.zip -OutFile php.zip
+        Expand-Archive -Path php.zip -DestinationPath C:\php
+        [System.Environment]::SetEnvironmentVariable('Path', "C:\php;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
+    - name: Setup PHP Development Package
+      run: |
+        Invoke-WebRequest -Uri https://windows.php.net/downloads/releases/php-devel-pack-${{ matrix.php }}-nts-Win32-vs16-x64.zip -OutFile php-devel-pack.zip
+        Expand-Archive -Path php-devel-pack.zip -DestinationPath C:\php-devel-pack
+        [System.Environment]::SetEnvironmentVariable('Path', "C:\php-devel-pack;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
+    - name: Setup PHP SDK
+      run: |
+        Invoke-WebRequest -Uri https://github.com/php/php-sdk-binary-tools/archive/refs/tags/php-sdk-2.3.0.zip -OutFile php-sdk.zip
+        Expand-Archive -Path php-sdk.zip -DestinationPath C:\php-sdk
+        [System.Environment]::SetEnvironmentVariable('Path', "C:\php-sdk;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
+    - name: Invoke the Starter Script
+      run: ./phpsdk-vs17-x64.bat
     - name: Phpize
       run: phpize
     - name: Configure
