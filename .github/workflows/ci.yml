@@ -85,9 +85,9 @@ jobs:
     - name: Invoke the Starter Script
       run: C:\php-sdk\php-sdk-binary-tools-php-sdk-2.3.0\phpsdk-vs17-x64.bat
     - name: Phpize
-      run: phpize
+      run: .\phpize
     - name: Configure
-      run: configure --with-lz4="C:\lz4"
+      run: .\configure --with-lz4="C:\lz4"
     - name: Make
       run: nmake
     - name: Make test
