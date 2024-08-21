@@ -19,8 +19,6 @@
 	ZEND_PARSE_PARAMETERS_END()
 #endif
 
-#define CHUNK_SIZE 65536  // 64 KB
-
 typedef int (*compress_func_t)(const char*, char*, int, int, int);
 
 static char* compress(const char *in, size_t in_len, int *out_len,
