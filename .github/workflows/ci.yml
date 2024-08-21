@@ -86,3 +86,8 @@ jobs:
       run: nmake
     - name: Make test
       run: nmake test
+    - name: Collects Result
+      with:
+        name: failed-test-results
+        path: php_test_results_*.txt
+        if-no-files-found: ignore
