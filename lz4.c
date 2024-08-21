@@ -47,7 +47,7 @@ static char* lz4_compress_fast(const char *in, const size_t in_len,
 	int out_len;
 
 	char* out = lz4_compress(in, in_len, &out_len,
-		(compress_func_t)LZ4_compress_default, 0);
+							(compress_func_t)LZ4_compress_default, 0);
 	if (out != NULL) {
 		*out_len_ptr = (size_t)out_len;
 	}
