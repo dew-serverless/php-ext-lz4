@@ -41,11 +41,13 @@ static char* lz4_compress(const char *in, const size_t in_len, int *out_len,
 	return out;
 }
 
-static char* lz4_compress_fast(const char *in, const size_t in_len, size_t *out_len_ptr)
+static char* lz4_compress_fast(const char *in, const size_t in_len,
+							size_t *out_len_ptr)
 {
 	int out_len;
 
-	char* out = lz4_compress(in, in_len, &out_len, (compress_func_t)LZ4_compress_default, 0);
+	char* out = lz4_compress(in, in_len, &out_len,
+		(compress_func_t)LZ4_compress_default, 0);
 	if (out != NULL) {
 		*out_len_ptr = (size_t)out_len;
 	}
@@ -53,7 +55,8 @@ static char* lz4_compress_fast(const char *in, const size_t in_len, size_t *out_
 	return out;
 }
 
-static char* lz4_compress_hc(const char *in, const size_t in_len, size_t *out_len_ptr, const int level)
+static char* lz4_compress_hc(const char *in, const size_t in_len,
+							size_t *out_len_ptr, const int level)
 {
 	int out_len;
 
@@ -65,7 +68,9 @@ static char* lz4_compress_hc(const char *in, const size_t in_len, size_t *out_le
 	return out;
 }
 
-static int lz4_uncompress(const char *in, const size_t in_len, char **out, size_t *out_len, const size_t max_len)
+static int lz4_uncompress(const char *in, const size_t in_len,
+						char **out, size_t *out_len,
+						const size_t max_len)
 {
 	*out = emalloc(max_len);
 	if (*out == NULL) {
