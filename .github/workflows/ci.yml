@@ -22,7 +22,6 @@ jobs:
         curl -sL https://github.com/lz4/lz4/archive/refs/tags/v${{ matrix.lz4}}.tar.gz | \
           tar -zx --strip-components=1 -C "$BUILD_DIR"
         cd "$BUILD_DIR"
-        ./configure
         make && make install
     - name: Setup PHP
       uses: shivammathur/setup-php@v2
