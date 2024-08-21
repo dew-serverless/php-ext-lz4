@@ -21,18 +21,16 @@
 
 typedef int (*compress_func_t)(const char*, char*, int, int, int);
 
-static char* compress(const char *in, size_t in_len, int *out_len,
-					  compress_func_t compress_func,
-					  int level) {
-	char *out;
-	int out_max;
-
-	out_max = LZ4_compressBound(in_len);
+static char* compress(const char *in, const size_t in_len, int *out_len,
+						const compress_func_t compress_func,
+						const int level)
+{
+	const int out_max = LZ4_compressBound(in_len);
 	if (out_max <= 0) {
 		return NULL;
 	}
 
-	out = emalloc(out_max);
+	char *out = emalloc(out_max);
 	*out_len = compress_func(in, out, (int)in_len, out_max, level);
 
 	if (*out_len == 0) {
@@ -43,11 +41,11 @@ static char* compress(const char *in, size_t in_len, int *out_len,
 	return out;
 }
 
-static char* compress_fast(const char *in, size_t in_len, size_t *out_len_ptr) {
+static char* compress_fast(const char *in, const size_t in_len, size_t *out_len_ptr)
+{
 	int out_len;
 
 	char* out = compress(in, in_len, &out_len, (compress_func_t)LZ4_compress_default, 0);
-
 	if (out != NULL) {
 		*out_len_ptr = (size_t)out_len;
 	}
@@ -55,11 +53,11 @@ static char* compress_fast(const char *in, size_t in_len, size_t *out_len_ptr) {
 	return out;
 }
 
-static char* compress_hc(const char *in, size_t in_len, size_t *out_len_ptr, int level) {
+static char* compress_hc(const char *in, const size_t in_len, size_t *out_len_ptr, const int level)
+{
 	int out_len;
 
 	char* out = compress(in, in_len, &out_len, LZ4_compress_HC, level);
-
 	if (out != NULL) {
 		*out_len_ptr = out_len;
 	}
@@ -67,7 +65,8 @@ static char* compress_hc(const char *in, size_t in_len, size_t *out_len_ptr, int
 	return out;
 }
 
-static int lz4_uncompress(const char *in, const size_t in_len, char **out, size_t *out_len, const size_t max_len) {
+static int lz4_uncompress(const char *in, const size_t in_len, char **out, size_t *out_len, const size_t max_len)
+{
 	*out = emalloc(max_len);
 	if (*out == NULL) {
 		php_error_docref(NULL, E_WARNING, "could not allocate memory");
@@ -88,10 +87,8 @@ static int lz4_uncompress(const char *in, const size_t in_len, char **out, size_
 /* {{{ string|false lz4compress(string $data, [int $level]) */
 PHP_FUNCTION(lz4compress)
 {
-	char *in;
-	size_t in_len;
-	char *out;
-	size_t out_len;
+	char *in, *out = NULL;
+	size_t in_len, out_len;
 	zend_long level = 0;
 
 	ZEND_PARSE_PARAMETERS_START(1, 2)
