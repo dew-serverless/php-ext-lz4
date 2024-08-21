@@ -80,7 +80,7 @@ jobs:
         Expand-Archive -Path php-sdk.zip -DestinationPath C:\php-sdk
         [System.Environment]::SetEnvironmentVariable('Path', "C:\php-sdk;$Env:Path", [System.EnvironmentVariableTarget]::Machine)
     - name: Invoke the Starter Script
-      run: phpsdk-vs17-x64.bat
+      run: C:\php-sdk\phpsdk-vs17-x64.bat
     - name: Phpize
       run: phpize
     - name: Configure
