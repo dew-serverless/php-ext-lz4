@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         php: ['8.3']
-        lz4: ['1.10.0']
+        lz4: ['1.9.2', '1.10.0']
 
     name: windows latest - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
     runs-on: windows-latest
