@@ -87,7 +87,7 @@ jobs:
     - name: Listing Files
       run: Get-ChildItem
     - name: Phpize
-      run: .\phpize
+      run: phpize
     - name: Configure
       run: .\configure --with-lz4="C:\lz4"
     - name: Make
