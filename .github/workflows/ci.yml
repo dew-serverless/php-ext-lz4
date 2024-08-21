@@ -81,7 +81,7 @@ jobs:
     - name: List Files
       run: Get-ChildItem
     - name: Configure
-      run: configure.bat --with-lz4="C:\lz4" --with-prefix=${{ steps.setup-php-sdk.outputs.prefix }}
+      run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=${{ steps.setup-php-sdk.outputs.prefix }}
     - name: Make
       run: nmake
     - name: Make test
