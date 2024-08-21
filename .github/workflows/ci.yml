@@ -48,7 +48,7 @@ jobs:
         php: ['8.3']
         lz4: ['1.10.0']
 
-    name: Windows Latest - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
+    name: windows latest - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
     runs-on: windows-latest
 
     steps:
