@@ -173,14 +173,14 @@ PHP_MINFO_FUNCTION(lz4)
 /* {{{ lz4_module_entry */
 zend_module_entry lz4_module_entry = {
 	STANDARD_MODULE_HEADER,
-	"lz4",					/* Extension name */
-	ext_functions,					/* zend_function_entry */
-	NULL,							/* PHP_MINIT - Module initialization */
-	NULL,							/* PHP_MSHUTDOWN - Module shutdown */
-	PHP_RINIT(lz4),			/* PHP_RINIT - Request initialization */
-	NULL,							/* PHP_RSHUTDOWN - Request shutdown */
-	PHP_MINFO(lz4),			/* PHP_MINFO - Module info */
-	PHP_LZ4_VERSION,		/* Version */
+	"lz4",							/* Extension name */
+	ext_functions,						/* zend_function_entry */
+	NULL,				/* PHP_MINIT - Module initialization */
+	NULL,			/* PHP_MSHUTDOWN - Module shutdown */
+	PHP_RINIT(lz4),	/* PHP_RINIT - Request initialization */
+	NULL,			/* PHP_RSHUTDOWN - Request shutdown */
+	PHP_MINFO(lz4),						/* PHP_MINFO - Module info */
+	PHP_LZ4_VERSION,				/* Version */
 	STANDARD_MODULE_PROPERTIES
 };
 /* }}} */
