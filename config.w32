@@ -1,7 +1,16 @@
-ARG_ENABLE('lz4', 'lz4 support', 'no');
+// vim:ft=javascript
+
+ARG_WITH('lz4', 'lz4 support', 'no');
 
 if (PHP_LZ4 != 'no') {
-	AC_DEFINE('HAVE_LZ4', 1, 'lz4 support enabled');
+    if (CHECK_LIB('liblz4.dll.a', 'lz4', PHP_LZ4 + '\\dll') &&
+        CHECK_HEADER_ADD_INCLUDE('lz4.h', 'CFLAGS_LZ4', PHP_LZ4 + '\\include') &&
+        CHECK_HEADER_ADD_INCLUDE('lz4hc.h', 'CFLAGS_LZ4', PHP_LZ4 + '\\include')) {
 
-	EXTENSION('lz4', 'lz4.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
+        EXTENSION('lz4', 'lz4.c', null, '/DZEND_ENABLE_STATIC_TSRMLS_CACHE=1');
+        AC_DEFINE('HAVE_LZ4', 1, 'Have lz4 support');
+    } else {
+        WARNING("lz4 support can't be enabled, lz4 is missing");
+        PHP_LZ4 = 'no';
+    }
 }
