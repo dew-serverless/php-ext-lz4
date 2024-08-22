@@ -67,6 +67,7 @@ jobs:
         Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory -Force
         Add-Content $Env:GITHUB_PATH "$Lz4Directory\dll"
         Get-ChildItem $Lz4Directory\dll
+        Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
     - id: setup-php-sdk
       name: Setup PHP SDK
       uses: php/setup-php-sdk@v0.8
