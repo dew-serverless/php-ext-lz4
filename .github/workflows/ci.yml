@@ -45,9 +45,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-2019]
-        php: ['8.3']
-        lz4: ['1.9.4']
+        include: [
+          { os: windows-2019, php: '8.3', lz4: '1.9.4', vs: '16.0' },
+        ]
 
     name: ${{ matrix.os }} - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
     runs-on: ${{ matrix.os }}
@@ -68,8 +68,25 @@ jobs:
         Add-Content $Env:GITHUB_PATH "$Lz4Directory\dll"
         Get-ChildItem $Lz4Directory\dll
         Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
-    - id: setup-php-sdk
-      name: Setup PHP SDK
+    - name: Cache PHP SDK
+      id: cache-php-sdk
+      uses: actions/checkout@v4
+      with:
+        path: |
+          .\php-sdk
+          .\php-bin
+          .\php-dev
+        key: php-sdk-action-0.8-${{ matrix.php }}-vs${{ matrix.vs }}
+    - name: Configure System Path for PHP SDK Manually
+      if: steps.cache-php-sdk.outputs.cache-hit == 'true
+      run: |
+        Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\bin"
+        Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\msys2\usr\bin"
+        Add-Content $Env:GITHUB_PATH "$pwd\php-bin"
+        Add-Content $Env:GITHUB_PATH "$pwd\php-dev"
+    - name: Setup PHP SDK
+      if: steps.cache-php-sdk.outputs.cache-hit != 'true'
+      id: setup-php-sdk
       uses: php/setup-php-sdk@v0.8
       with:
         version: ${{ matrix.php }}
@@ -79,9 +96,9 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
-        toolset: ${{ steps.setup-php-sdk.outputs.toolset }}
+        toolset: ${{ matrix.vs }}
     - run: phpize
-    - run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=${{ steps.setup-php-sdk.outputs.prefix }}
+    - run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=".\php-bin"
     - run: nmake
     - name: Test
       run: |
