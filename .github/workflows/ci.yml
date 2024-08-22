@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         include: [
-          { os: windows-2019, php: '8.3', lz4: '1.9.4', vs: '16.0' },
+          { os: windows-2019, php: '8.3', lz4: '1.9.4', vs: '14.0' },
         ]
 
     name: ${{ matrix.os }} - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
