@@ -70,7 +70,7 @@ jobs:
         Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
     - name: Cache PHP SDK
       id: cache-php-sdk
-      uses: actions/checkout@v4
+      uses: actions/cache@v4
       with:
         path: |
           .\php-sdk
