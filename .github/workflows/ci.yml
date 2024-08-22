@@ -65,7 +65,6 @@ jobs:
         New-Item -ItemType Directory -Force -Path $Lz4Directory
         Invoke-WebRequest -Uri "https://github.com/lz4/lz4/releases/download/v$Lz4Version/lz4_win64_v$Lz4VersionUnderscored.zip" -OutFile $Lz4Zip
         Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory -Force
-        Add-Content $Env:GITHUB_PATH "$Lz4Directory\dll"
         Get-ChildItem $Lz4Directory\dll
         Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
     - name: Cache PHP SDK
