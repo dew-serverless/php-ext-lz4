@@ -84,6 +84,6 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: failed-test-results
+        name: test-results
         path: php_test_results_*.txt
         if-no-files-found: ignore
