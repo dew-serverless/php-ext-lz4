@@ -82,7 +82,10 @@ jobs:
     - run: phpize
     - run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=${{ steps.setup-php-sdk.outputs.prefix }}
     - run: nmake
-    - run: nmake test
+    - name: Test
+      run: |
+        [Environment]::GetEnvironmentVariable('Path')
+        nmake test
     - name: Collects Result
       uses: actions/upload-artifact@v4
       if: always()
