@@ -78,7 +78,7 @@ jobs:
           .\php-dev
         key: php-sdk-action-0.8-${{ matrix.php }}-vs${{ matrix.vs }}
     - name: Configure System Path for PHP SDK Manually
-      if: steps.cache-php-sdk.outputs.cache-hit == 'true
+      if: steps.cache-php-sdk.outputs.cache-hit == 'true'
       run: |
         Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\bin"
         Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\msys2\usr\bin"
