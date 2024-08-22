@@ -64,6 +64,7 @@ jobs:
         New-Item -ItemType Directory -Force -Path $Lz4Directory
         Invoke-WebRequest -Uri "https://github.com/lz4/lz4/releases/download/v$Lz4Version/lz4_win64_v$Lz4VersionUnderscored.zip" -OutFile $Lz4Zip
         Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory -Force
+        [Environment]::SetEnvironmentVariable('Path', "$Lz4Directory\dll;$Env:Path", [EnvironmentVariableTarget]::Machine)
     - id: setup-php-sdk
       name: Setup PHP SDK
       uses: php/setup-php-sdk@v0.8
