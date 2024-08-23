@@ -70,7 +70,7 @@ jobs:
         }
         Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
         Write-Output "has-runtime-library=true" >> $Env:GITHUB_OUTPUT
-    - name: Cache PHP SDK
+    - name: Restore PHP SDK
       id: cache-php-sdk
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
       uses: actions/cache@v4
@@ -80,14 +80,14 @@ jobs:
           .\php-bin
           .\php-dev
         key: php-sdk-action-0.8-${{ matrix.php }}-vs${{ matrix.vs }}
-    - name: Configure System Path for PHP SDK Manually
+    - name: Configure System Path for Restored PHP SDK
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit == 'true'
       run: |
         Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\bin"
         Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\msys2\usr\bin"
         Add-Content $Env:GITHUB_PATH "$pwd\php-bin"
         Add-Content $Env:GITHUB_PATH "$pwd\php-dev"
-    - name: Setup PHP SDK
+    - name: Setup PHP SDK if Missing
       id: setup-php-sdk
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit != 'true'
       uses: php/setup-php-sdk@v0.8
