@@ -62,7 +62,7 @@ jobs:
         $Lz4Zip = "lz4.zip"
         $Lz4Url = 'https://github.com/lz4/lz4/releases/download/v{0}/lz4_win64_v{1}.zip' -f "${{ matrix.lz4 }}", ("${{ matrix.lz4 }}" -replace '\.','_')
         Invoke-WebRequest -Uri $Lz4Url -OutFile $Lz4Zip
-        Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory -Force
+        Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory
         Get-ChildItem $Lz4Directory\dll
         Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
     - name: Cache PHP SDK
