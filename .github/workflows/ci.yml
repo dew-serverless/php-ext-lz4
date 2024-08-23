@@ -79,7 +79,7 @@ jobs:
           .\php-sdk
           .\php-bin
           .\php-dev
-        key: php-sdk-action-0.8-${{ matrix.php }}
+        key: php-sdk-action-0.9-${{ matrix.php }}
     - name: Configure System Path for Restored PHP SDK
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit == 'true'
       run: |
@@ -90,7 +90,7 @@ jobs:
     - name: Setup PHP SDK if Missing
       id: setup-php-sdk
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit != 'true'
-      uses: php/setup-php-sdk@v0.8
+      uses: php/setup-php-sdk@v0.9
       with:
         version: ${{ matrix.php }}
         arch: x64
