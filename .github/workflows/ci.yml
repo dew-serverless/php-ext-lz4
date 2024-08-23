@@ -48,6 +48,9 @@ jobs:
         os: [windows-latest, windows-2019]
         php: ['8.1', '8.2', '8.3', '8.4']
         lz4: ['1.9.2', '1.9.4', '1.10.0']
+        exclude:
+          - os: windows-2019
+            php: '8.4'
 
     name: ${{ matrix.os }} - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
     runs-on: ${{ matrix.os }}
