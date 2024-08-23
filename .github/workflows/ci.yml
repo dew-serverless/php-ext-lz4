@@ -106,7 +106,7 @@ jobs:
       run: phpize
     - name: Configure
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
-      run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=".\php-bin"
+      run: .\configure --with-lz4="C:\lz4" --with-prefix=".\php-bin"
     - name: Nmake
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
       run: nmake
