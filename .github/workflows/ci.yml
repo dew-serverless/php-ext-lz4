@@ -46,7 +46,7 @@ jobs:
       fail-fast: false
       matrix:
         include: [
-          { os: windows-2019, php: '8.3', lz4: '1.9.4', vs: '14.0' },
+          { os: windows-2019, php: '8.3', lz4: '1.9.4' },
         ]
 
     name: ${{ matrix.os }} - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
@@ -79,7 +79,7 @@ jobs:
           .\php-sdk
           .\php-bin
           .\php-dev
-        key: php-sdk-action-0.8-${{ matrix.php }}-vs${{ matrix.vs }}
+        key: php-sdk-action-0.8-${{ matrix.php }}
     - name: Configure System Path for Restored PHP SDK
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit == 'true'
       run: |
@@ -100,7 +100,6 @@ jobs:
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
-        toolset: ${{ matrix.vs }}
     - name: Phpize
       if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
       run: phpize
