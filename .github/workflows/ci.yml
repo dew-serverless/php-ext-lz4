@@ -40,3 +40,85 @@ jobs:
       run: make
     - name: Make test
       run: make test
+
+  build-windows:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, windows-2019]
+        php: ['8.1', '8.2', '8.3', '8.4']
+        lz4: ['1.9.2', '1.9.4', '1.10.0']
+        exclude:
+          - os: windows-2019
+            php: '8.4'
+
+    name: ${{ matrix.os }} - PHP ${{ matrix.php }} - lz4 ${{ matrix.lz4 }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+
+    - uses: actions/checkout@v4
+    - name: Download LZ4 Windows Binary Package
+      id: download-lz4-package
+      run: |
+        $ErrorActionPreference = 'Stop'
+        $Lz4Directory = "C:\lz4"
+        $Lz4Zip = "lz4.zip"
+        $Lz4Url = 'https://github.com/lz4/lz4/releases/download/v{0}/lz4_win64_v{1}.zip' -f "${{ matrix.lz4 }}", ("${{ matrix.lz4 }}" -replace '\.','_')
+        Invoke-WebRequest -Uri $Lz4Url -OutFile $Lz4Zip
+        Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory
+        if ((Get-ChildItem $Lz4Directory\dll -Filter msys-lz4-1.dll -Name) -eq $null) {
+          Write-Output "Missing Lz4 runtime library"
+          Exit 0
+        }
+        Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
+        Write-Output "has-runtime-library=true" >> $Env:GITHUB_OUTPUT
+    - name: Restore PHP SDK
+      id: cache-php-sdk
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      uses: actions/cache@v4
+      with:
+        path: |
+          .\php-sdk
+          .\php-bin
+          .\php-dev
+        key: php-sdk-action-0.9-${{ matrix.php }}
+    - name: Configure System Path for Restored PHP SDK
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit == 'true'
+      run: |
+        Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\bin"
+        Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\msys2\usr\bin"
+        Add-Content $Env:GITHUB_PATH "$pwd\php-bin"
+        Add-Content $Env:GITHUB_PATH "$pwd\php-dev"
+    - name: Setup PHP SDK if Missing
+      id: setup-php-sdk
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit != 'true'
+      uses: php/setup-php-sdk@v0.9
+      with:
+        version: ${{ matrix.php }}
+        arch: x64
+        ts: nts
+    - name: Setup Compiling Environment
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - name: Phpize
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: phpize
+    - name: Configure
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: .\configure --with-lz4="C:\lz4" --with-prefix=".\php-bin"
+    - name: Nmake
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: nmake
+    - name: Test
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: nmake test
+    - name: Collects Result
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results-${{ matrix.os }}-${{ matrix.php }}-${{ matrix.lz4 }}
+        path: php_test_results_*.txt
+        if-no-files-found: ignore
