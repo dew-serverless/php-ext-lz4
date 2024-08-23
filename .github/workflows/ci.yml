@@ -56,6 +56,7 @@ jobs:
 
     - uses: actions/checkout@v4
     - name: Download LZ4 Windows Binary Package
+      id: download-lz4-package
       run: |
         $ErrorActionPreference = 'Stop'
         $Lz4Directory = "C:\lz4"
@@ -63,10 +64,15 @@ jobs:
         $Lz4Url = 'https://github.com/lz4/lz4/releases/download/v{0}/lz4_win64_v{1}.zip' -f "${{ matrix.lz4 }}", ("${{ matrix.lz4 }}" -replace '\.','_')
         Invoke-WebRequest -Uri $Lz4Url -OutFile $Lz4Zip
         Expand-Archive -Path $Lz4Zip -DestinationPath $Lz4Directory
-        Get-ChildItem $Lz4Directory\dll
+        if (Get-ChildItem $Lz4Directory\dll -Filter msys-lz4-1.dll -Name) -eq $null {
+          Write-Output "Missing Lz4 runtime library"
+          Exit 0
+        }
         Copy-Item -Path $Lz4Directory\dll\msys-lz4-1.dll -Destination .
+        Write-Output "has-runtime-library=true" >> $Env:GITHUB_OUTPUT
     - name: Cache PHP SDK
       id: cache-php-sdk
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
       uses: actions/cache@v4
       with:
         path: |
@@ -75,35 +81,41 @@ jobs:
           .\php-dev
         key: php-sdk-action-0.8-${{ matrix.php }}-vs${{ matrix.vs }}
     - name: Configure System Path for PHP SDK Manually
-      if: steps.cache-php-sdk.outputs.cache-hit == 'true'
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit == 'true'
       run: |
         Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\bin"
         Add-Content $Env:GITHUB_PATH "$pwd\php-sdk\msys2\usr\bin"
         Add-Content $Env:GITHUB_PATH "$pwd\php-bin"
         Add-Content $Env:GITHUB_PATH "$pwd\php-dev"
     - name: Setup PHP SDK
-      if: steps.cache-php-sdk.outputs.cache-hit != 'true'
       id: setup-php-sdk
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true' && steps.cache-php-sdk.outputs.cache-hit != 'true'
       uses: php/setup-php-sdk@v0.8
       with:
         version: ${{ matrix.php }}
         arch: x64
         ts: nts
     - name: Setup Compiling Environment
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
       uses: ilammy/msvc-dev-cmd@v1
       with:
         arch: x64
         toolset: ${{ matrix.vs }}
-    - run: phpize
-    - run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=".\php-bin"
-    - run: nmake
+    - name: Phpize
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: phpize
+    - name: Configure
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: .\configure.bat --with-lz4="C:\lz4" --with-prefix=".\php-bin"
+    - name: Nmake
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: nmake
     - name: Test
-      run: |
-        [Environment]::GetEnvironmentVariable('Path')
-        nmake test
+      if: steps.download-lz4-package.outputs.has-runtime-library == 'true'
+      run: nmake test
     - name: Collects Result
-      uses: actions/upload-artifact@v4
       if: always()
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: php_test_results_*.txt
