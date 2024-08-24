@@ -72,7 +72,7 @@ static int lz4_uncompress(const char *in, const size_t in_len,
 						char **out, size_t *out_len,
 						const size_t limit)
 {
-	int status, dst_len = 0, round = 0;
+	int status, dst_len, round = 0;
 	size_t max_len = limit ? limit : in_len;
 
 	do {
