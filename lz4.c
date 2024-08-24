@@ -129,7 +129,7 @@ PHP_FUNCTION(lz4compress)
 }
 /* }}}*/
 
-/* {{{ string|false lz4uncompress(string $data, [ int $maxLength ]) */
+/* {{{ string|false lz4uncompress(string $data, [ int $max_length ]) */
 PHP_FUNCTION(lz4uncompress)
 {
 	char *in, *out = NULL;
