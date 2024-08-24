@@ -129,15 +129,16 @@ PHP_FUNCTION(lz4compress)
 }
 /* }}}*/
 
-/* {{{ string|false lz4uncompress(string $data, int $maxLength) */
+/* {{{ string|false lz4uncompress(string $data, [ int $maxLength ]) */
 PHP_FUNCTION(lz4uncompress)
 {
 	char *in, *out = NULL;
 	size_t in_len, out_len = 0;
 	zend_long max_len = 0;
 
-	ZEND_PARSE_PARAMETERS_START(2, 2)
+	ZEND_PARSE_PARAMETERS_START(1, 2)
 		Z_PARAM_STRING(in, in_len)
+		Z_PARAM_OPTIONAL
 		Z_PARAM_LONG(max_len)
 	ZEND_PARSE_PARAMETERS_END();
 
