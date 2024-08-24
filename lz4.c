@@ -68,10 +68,6 @@ static char* lz4_compress_hc(const char *in, const size_t in_len,
 	return out;
 }
 
-#define PHP_LZ4_OK 0
-#define PHP_LZ4_MEM_ERROR -1
-#define PHP_LZ4_BUF_ERROR -2
-
 static int lz4_uncompress(const char *in, const size_t in_len,
 						char **out, size_t *out_len,
 						const size_t limit)
