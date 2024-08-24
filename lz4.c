@@ -92,6 +92,9 @@ static int lz4_uncompress(const char *in, const size_t in_len,
 		*out_len = dst_len;
 		*out = erealloc(*out, *out_len);
 	} else {
+		if (*out) {
+			efree(*out);
+		}
 		*out_len = 0;
 	}
 	return status;
@@ -159,7 +162,6 @@ PHP_FUNCTION(lz4uncompress)
 				php_error_docref(NULL, E_WARNING, "could not uncompress the data");
 				break;
 		}
-		efree(out);
 		RETURN_FALSE;
 	}
 	RETVAL_STRINGL(out, out_len);
