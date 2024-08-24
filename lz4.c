@@ -86,7 +86,7 @@ static int lz4_uncompress(const char *in, const size_t in_len,
 #endif
 			max_len += (max_len >> 3) + 1;
 		}
-	} while (!limit && status == PHP_LZ4_BUF_ERROR && ++ round < 100);
+	} while (!limit && status == PHP_LZ4_BUF_ERROR && ++round < 100);
 
 	if (status == PHP_LZ4_OK) {
 		*out_len = dst_len;
