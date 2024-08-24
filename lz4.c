@@ -70,23 +70,34 @@ static char* lz4_compress_hc(const char *in, const size_t in_len,
 
 static int lz4_uncompress(const char *in, const size_t in_len,
 						char **out, size_t *out_len,
-						const size_t max_len)
+						const size_t limit)
 {
-	*out = emalloc(max_len);
-	if (*out == NULL) {
-		php_error_docref(NULL, E_WARNING, "could not allocate memory");
-		return FAILURE;
-	}
+	int status, dst_len, round = 0;
+	size_t max_len = limit ? limit : in_len;
 
-	const int dst_len = LZ4_decompress_safe(in, *out, in_len, max_len);
-	if (dst_len < 0) {
-		efree(*out);
-		php_error_docref(NULL, E_WARNING, "could not uncompress the data");
-		return FAILURE;
-	}
+	do {
+		if (!((*out = erealloc(*out, max_len)))) {
+			status = PHP_LZ4_MEM_ERROR;
+		} else {
+			dst_len = LZ4_decompress_safe(in, *out, in_len, max_len);
+			status = dst_len >= 0 ? PHP_LZ4_OK : PHP_LZ4_BUF_ERROR;
+#if 0
+			fprintf(stderr, "%3d: %3d max=%7lu,\tdst=%7d\n", round, status, max_len, dst_len);
+#endif
+			max_len += (max_len >> 3) + 1;
+		}
+	} while (!limit && status == PHP_LZ4_BUF_ERROR && ++round < 100);
 
-	*out_len = dst_len;
-	return SUCCESS;
+	if (status == PHP_LZ4_OK) {
+		*out_len = dst_len;
+		*out = erealloc(*out, *out_len);
+	} else {
+		if (*out) {
+			efree(*out);
+		}
+		*out_len = 0;
+	}
+	return status;
 }
 
 /* {{{ string|false lz4compress(string $data, [int $level]) */
@@ -117,15 +128,16 @@ PHP_FUNCTION(lz4compress)
 }
 /* }}}*/
 
-/* {{{ string|false lz4uncompress(string $data, int $maxLength) */
+/* {{{ string|false lz4uncompress(string $data, [ int $max_length ]) */
 PHP_FUNCTION(lz4uncompress)
 {
 	char *in, *out = NULL;
 	size_t in_len, out_len = 0;
 	zend_long max_len = 0;
 
-	ZEND_PARSE_PARAMETERS_START(2, 2)
+	ZEND_PARSE_PARAMETERS_START(1, 2)
 		Z_PARAM_STRING(in, in_len)
+		Z_PARAM_OPTIONAL
 		Z_PARAM_LONG(max_len)
 	ZEND_PARSE_PARAMETERS_END();
 
@@ -140,10 +152,18 @@ PHP_FUNCTION(lz4uncompress)
 
 	const int status = lz4_uncompress(in, in_len, &out, &out_len, max_len);
 
-	if (status == FAILURE) {
+	if (status != PHP_LZ4_OK) {
+		switch (status) {
+			case PHP_LZ4_MEM_ERROR:
+				php_error_docref(NULL, E_WARNING, "could not allocate memory");
+				break;
+			case PHP_LZ4_BUF_ERROR:
+			default:
+				php_error_docref(NULL, E_WARNING, "could not uncompress the data");
+				break;
+		}
 		RETURN_FALSE;
 	}
-
 	RETVAL_STRINGL(out, out_len);
 	efree(out);
 }
