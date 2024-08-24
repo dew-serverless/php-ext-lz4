@@ -74,13 +74,13 @@ static char* lz4_compress_hc(const char *in, const size_t in_len,
 
 static int lz4_uncompress(const char *in, const size_t in_len,
 						char **out, size_t *out_len,
-						const size_t max)
+						const size_t limit)
 {
 	int status, dst_len = 0, round = 0;
-	size_t max_len = max ? max : in_len;
+	size_t max_len = limit ? limit : in_len;
 
 	do {
-		if ((max && dst_len > max) || !((*out = erealloc(*out, max_len)))) {
+		if (!((*out = erealloc(*out, max_len)))) {
 			status = PHP_LZ4_MEM_ERROR;
 		} else {
 			dst_len = LZ4_decompress_safe(in, *out, in_len, max_len);
@@ -90,7 +90,7 @@ static int lz4_uncompress(const char *in, const size_t in_len,
 #endif
 			max_len += (max_len >> 3) + 1;
 		}
-	} while (!max && status == PHP_LZ4_BUF_ERROR && ++ round < 100);
+	} while (!limit && status == PHP_LZ4_BUF_ERROR && ++ round < 100);
 
 	if (status == PHP_LZ4_OK) {
 		*out_len = dst_len;
