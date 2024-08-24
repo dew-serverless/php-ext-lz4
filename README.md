@@ -99,7 +99,7 @@ Uncompress a compressed string.
 #### Description
 
 ```php
-lz4uncompress(string $data, int $maxLength): string|false
+lz4uncompress(string $data, int $maxLength = 0): string|false
 ```
 
 This function uncompress a compressed string.
@@ -119,7 +119,7 @@ The original uncompressed data or [false](https://www.php.net/manual/en/reserved
 on error.
 
 The function will return an error if the uncompressed data is more than
-the parameter _maxLength_.
+the optional parameter _maxLength_.
 
 ## License
 
