@@ -9,9 +9,6 @@
 #include "php_lz4.h"
 #include "lz4_arginfo.h"
 
-#include <lz4.h>
-#include <lz4hc.h>
-
 /* For compatibility with older PHP versions */
 #ifndef ZEND_PARSE_PARAMETERS_NONE
 #define ZEND_PARSE_PARAMETERS_NONE() \
@@ -190,12 +187,20 @@ PHP_MINFO_FUNCTION(lz4)
 }
 /* }}} */
 
+/* {{{ PHP_MINIT_FUNCTION */
+static PHP_MINIT_FUNCTION(lz4)
+{
+	register_lz4_symbols(module_number);
+	return SUCCESS;
+}
+/* }}} */
+
 /* {{{ lz4_module_entry */
 zend_module_entry lz4_module_entry = {
 	STANDARD_MODULE_HEADER,
 	"lz4",					/* Extension name */
 	ext_functions,			/* zend_function_entry */
-	NULL,					/* PHP_MINIT - Module initialization */
+	PHP_MINIT(lz4),
 	NULL,					/* PHP_MSHUTDOWN - Module shutdown */
 	PHP_RINIT(lz4),			/* PHP_RINIT - Request initialization */
 	NULL,					/* PHP_RSHUTDOWN - Request shutdown */
