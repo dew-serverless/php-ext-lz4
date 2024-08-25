@@ -30,9 +30,9 @@ The constants below are defined by this extension, and will only be available
 when the extension has been dynamically loaded at runtime.
 
 <dl>
-    <dt>LZ4_VERSION (string)</dt>
+    <dt>LZ4_VERSION_STRING (string)</dt>
     <dd>lz4 version number as a string.</dd>
-    <dt>LZ4_VERNUM (int)</dt>
+    <dt>LZ4_VERSION_NUMBER (int)</dt>
     <dd>lz4 version number as an int.</dd>
 </dl>
 
