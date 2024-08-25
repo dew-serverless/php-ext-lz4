@@ -1,6 +1,8 @@
 # LZ4 PHP
 
 [![CI](https://github.com/dew-serverless/php-ext-lz4/actions/workflows/ci.yml/badge.svg)](https://github.com/dew-serverless/php-ext-lz4/actions/workflows/ci.yml)
+[![MIT License](https://img.shields.io/github/license/dew-serverless/php-ext-lz4)](https://github.com/dew-serverless/php-ext-lz4)
+[![Release](https://img.shields.io/github/v/release/dew-serverless/php-ext-lz4)](https://github.com/dew-serverless/php-ext-lz4)
 
 The PHP lz4 binding enables you to transparently read and write lz4
 compressed data.
